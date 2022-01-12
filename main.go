@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"runtime/debug"
+	"webhook-controller-demo/server"
 
 	"github.com/golang/glog"
 )
@@ -28,7 +29,7 @@ func main() {
 	keyPath := filepath.Join(tlsDir, tlsKeyFile)
 
 	mux := http.NewServeMux()
-	mux.Handle("/mutate", admitFuncHandler(applySecurityDefaults))
+	mux.Handle("/mutatedns", server.AdmitFuncHandle(server.MutateDnsConfig))
 	server := &http.Server{
 		Addr:    ":443",
 		Handler: mux,
