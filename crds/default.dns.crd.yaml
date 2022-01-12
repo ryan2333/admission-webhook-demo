@@ -1,0 +1,14 @@
+---
+apiVersion: admission.ke.com/v1
+kind: DnsConfig
+metadata:
+  name: dnsconfig-default
+  namespace: default
+spec:
+  nameServers:
+    - "10.17.0.2"
+  options:
+    - name: "timeout"
+      value: "1"
+    - name: "ndots"
+      value: "1"

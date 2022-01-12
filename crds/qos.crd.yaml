@@ -1,0 +1,39 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: qoss.admission.ke.com
+spec:
+  group: admission.ke.com
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                requests:
+                  type: object
+                  properties:
+                    cpu:
+                      type: string
+                    mem:
+                      type: string
+                limits:
+                  type: object
+                  properties:
+                    cpu:
+                      type: string
+                    mem:
+                      type: string
+
+  scope: Namespaced
+  names:
+    plural: qoss
+    singular: qos
+    kind: Qos
+    shortNames:
+      - qos

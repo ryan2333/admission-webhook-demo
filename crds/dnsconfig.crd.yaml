@@ -1,0 +1,37 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: dnsconfigs.admission.ke.com
+spec:
+  group: admission.ke.com
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                nameServers:
+                  type: array
+                  items:
+                    type: string
+                options:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+  scope: Namespaced
+  names:
+    plural: dnsconfigs
+    singular: dnsconfig
+    kind: DnsConfig
+    shortNames:
+      - dc

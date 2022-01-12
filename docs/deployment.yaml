@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: registry.ke.com/cloud-virtual/cloud-engine/webhook:v1.12.1
+          image: registry.ke.com/cloud-virtual/cloud-engine/webhook:v1.12.5
           imagePullPolicy: Always
           ports:
             - containerPort: 443

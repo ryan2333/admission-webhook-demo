@@ -18,3 +18,7 @@ webhooks:
         apiGroups: ["apps"]
         apiVersions: ["v1"]
         resources: ["deployments"]
+      - operations: ["CREATE", "UPDATE", "DELETE"]
+        apiGroups: ["admission.ke.com"]
+        apiVersions: ["v1"]
+        resources: ["dnsconfigs", "qoss"]

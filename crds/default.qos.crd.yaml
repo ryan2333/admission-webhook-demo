@@ -1,0 +1,13 @@
+---
+apiVersion: admission.ke.com/v1
+kind: Qos
+metadata:
+  name: qos-default
+  namespace: default
+spec:
+  requests:
+    cpu: 100
+    mem: 200
+  limits:
+    cpu: 200
+    mem: 500
