@@ -17,6 +17,6 @@ webhook-server
 .vscode/
 *.bak
 *.bak1
-doc/ca.*
-doc/webhook-*
-
+docs/ca.*
+docs/webhook-*
+docs/deployment.yaml
