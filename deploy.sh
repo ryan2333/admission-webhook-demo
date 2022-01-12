@@ -5,7 +5,7 @@
 
 version=$1
 
-kubectl delete -f doc/webhook.yaml
+#kubectl delete -f doc/webhook.yaml
 rm -f ./webhook-server \
 && CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o webhook-server \
 && docker build -t registry.ke.com/cloud-virtual/cloud-engine/webhook-server:${version} . \

@@ -13,7 +13,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 const (
@@ -29,6 +28,12 @@ type patchOperation struct {
 	Op    string      `json:"op"`
 	Path  string      `json:"path"`
 	Value interface{} `json:"value,omitempty"`
+}
+
+type dnsConfig struct {
+	Nameservers []string            `json:"nameservers"`
+	Options     []map[string]string `json:"options"`
+	Searches    []string            `json:"searches"`
 }
 
 type admitFunc func(*admission.AdmissionRequest) ([]patchOperation, error)
@@ -47,86 +52,81 @@ func applySecurityDefaults(req *admission.AdmissionRequest) ([]patchOperation, e
 		return nil, fmt.Errorf("deserialize pod object failed, err: %v", err.Error())
 	}
 
-	var containers []corev1.Container
+	// var containers []corev1.Container
 	var patches []patchOperation
 
-	for _, c := range pod.Spec.Containers {
-		port := 80
-		if len(c.Ports) != 0 {
-			port = int(c.Ports[0].ContainerPort)
-		}
-		if c.ReadinessProbe == nil {
-			c.ReadinessProbe = &corev1.Probe{
-				Handler: corev1.Handler{
-					HTTPGet: &corev1.HTTPGetAction{
-						Path: "/",
-						Port: intstr.FromInt(int(port)),
-					},
+	// for _, c := range pod.Spec.Containers {
+	// 	port := 80
+	// 	if len(c.Ports) != 0 {
+	// 		port = int(c.Ports[0].ContainerPort)
+	// 	}
+	// 	if c.ReadinessProbe == nil {
+	// 		c.ReadinessProbe = &corev1.Probe{
+	// 			Handler: corev1.Handler{
+	// 				HTTPGet: &corev1.HTTPGetAction{
+	// 					Path: "/",
+	// 					Port: intstr.FromInt(int(port)),
+	// 				},
+	// 			},
+	// 			InitialDelaySeconds: 60,
+	// 			TimeoutSeconds:      5,
+	// 			FailureThreshold:    3,
+	// 			SuccessThreshold:    1,
+	// 			PeriodSeconds:       10,
+	// 		}
+	// 	}
+
+	// 	if c.LivenessProbe == nil {
+	// 		c.LivenessProbe = &corev1.Probe{
+	// 			Handler: corev1.Handler{
+	// 				HTTPGet: &corev1.HTTPGetAction{
+	// 					Path: "/",
+	// 					Port: intstr.FromInt(int(port)),
+	// 				},
+	// 			},
+	// 			InitialDelaySeconds: 60,
+	// 			TimeoutSeconds:      5,
+	// 			FailureThreshold:    3,
+	// 			SuccessThreshold:    1,
+	// 			PeriodSeconds:       10,
+	// 		}
+
+	// 	}
+	// 	containers = append(containers, c)
+	// }
+
+	// patches = append(patches, patchOperation{
+	// 	Op:    "replace",
+	// 	Path:  "/spec/containers",
+	// 	Value: containers,
+	// })
+
+	var b string = "1"
+
+	patch := patchOperation{
+		Path: "/spec/dnsConfig",
+		Value: &corev1.PodDNSConfig{
+			Options: []corev1.PodDNSConfigOption{
+				{
+					Name:  "ndots",
+					Value: &b,
 				},
-				InitialDelaySeconds: 60,
-				TimeoutSeconds:      5,
-				FailureThreshold:    3,
-				SuccessThreshold:    1,
-				PeriodSeconds:       10,
-			}
-
-			// patch := patchOperation{
-			// 	Op:   "add",
-			// 	Path: fmt.Sprintf("/spec/containers/%s/readinessProbe", c.Name),
-			// 	Value: map[string]interface{}{
-			// 		"failureThreshold": 3,
-			// 		"httpGet": map[string]interface{}{
-			// 			"path": "/",
-			// 			"port": port,
-			// 		},
-			// 		"initialDelaySeconds": 60,
-			// 		"periodSeconds":       15,
-			// 		"successThreshold":    1,
-			// 		"timeoutSeconds":      5,
-			// 	},
-			// }
-			// patches = append(patches, patch)
-		}
-
-		if c.LivenessProbe == nil {
-			// patch := patchOperation{
-			// 	Op:   "add",
-			// 	Path: "",
-			// 	Value: map[string]interface{}{
-			// 		"failureThreshold": 3,
-			// 		"httpGet": map[string]interface{}{
-			// 			"path": "/",
-			// 			"port": port,
-			// 		},
-			// 		"initialDelaySeconds": 60,
-			// 		"periodSeconds":       15,
-			// 		"successThreshold":    1,
-			// 		"timeoutSeconds":      5,
-			// 	},
-			// }
-			// patches = append(patches, patch)
-			c.LivenessProbe = &corev1.Probe{
-				Handler: corev1.Handler{
-					HTTPGet: &corev1.HTTPGetAction{
-						Path: "/",
-						Port: intstr.FromInt(int(port)),
-					},
+				{
+					Name:  "timeout",
+					Value: &b,
 				},
-				InitialDelaySeconds: 60,
-				TimeoutSeconds:      5,
-				FailureThreshold:    3,
-				SuccessThreshold:    1,
-				PeriodSeconds:       10,
-			}
-
-		}
-		containers = append(containers, c)
+			},
+		},
 	}
-	patches = append(patches, patchOperation{
-		Op:    "replace",
-		Path:  "/spec/containers",
-		Value: containers,
-	})
+
+	if pod.Spec.DNSConfig == nil {
+		patch.Op = "add"
+		patches = append(patches, patch)
+	} else {
+		patch.Op = "replace"
+		patches = append(patches, patch)
+	}
+
 	return patches, nil
 }
 
